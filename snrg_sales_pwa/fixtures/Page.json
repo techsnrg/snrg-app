@@ -1,0 +1,21 @@
+[
+ {
+  "doctype": "Page",
+  "name": "sales-pwa",
+  "title": "Sales PWA",
+  "module": "Snrg Sales Pwa",
+  "standard": "Yes",
+  "system_page": 0,
+  "roles": [
+   {
+    "role": "Sales User"
+   },
+   {
+    "role": "Sales Manager"
+   },
+   {
+    "role": "System Manager"
+   }
+  ]
+ }
+]

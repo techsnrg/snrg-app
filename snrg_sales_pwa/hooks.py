@@ -6,3 +6,8 @@ app_email = "admin@snrg.in"
 app_license = "MIT"
 
 # No app_include_js — bundle is loaded on-demand by the page JS only
+
+# Fixtures — imported on every bench migrate, ensures the Page record always exists
+fixtures = [
+    {"dt": "Page", "filters": [["name", "=", "sales-pwa"]]}
+]
