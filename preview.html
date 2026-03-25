@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SNRG Sales PWA — Preview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #f3f4f6; display: flex; justify-content: center; padding: 24px; }
+    .phone { width: 390px; height: 780px; background: #f9fafb; border-radius: 28px;
+             box-shadow: 0 8px 40px rgba(0,0,0,.18); overflow: hidden;
+             display: flex; flex-direction: column; border: 1px solid #e5e7eb; }
+    .label { font-size: 11px; color: #9ca3af; text-align: center; margin-top: 10px; }
+  </style>
+</head>
+<body>
+<div>
+  <p class="label" style="margin-bottom:12px;">
+    📱 Mobile preview — <strong>snrg_sales_pwa</strong> › CustomerSelect screen
+  </p>
+
+  <div class="phone">
+
+    <!-- Status bar mock -->
+    <div class="bg-white flex justify-between items-center px-5 pt-3 pb-1 text-xs text-gray-500 font-medium shrink-0">
+      <span>9:41</span>
+      <div class="flex gap-1 items-center">
+        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><rect x="21" y="10" width="2" height="4" rx="1"/></svg>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 px-4 py-3 shrink-0">
+      <h1 class="text-base font-semibold text-gray-800 mb-3">Select Customer</h1>
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+        </svg>
+        <input type="search" placeholder="Search by name…"
+               class="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg
+                      focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+      </div>
+    </div>
+
+    <!-- Customer list -->
+    <div class="flex-1 overflow-y-auto divide-y divide-gray-100 bg-white">
+
+      <!-- Row — selected -->
+      <div class="flex items-center px-4 py-3 bg-blue-50 cursor-pointer">
+        <div class="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center
+                    justify-center text-sm font-semibold shrink-0 mr-3">AB</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-gray-800 truncate">Abhishek Builders</p>
+          <p class="text-xs text-gray-400">West India · Retail</p>
+        </div>
+        <svg class="w-4 h-4 text-blue-600 shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+
+      <!-- Rows — unselected -->
+      <div class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer">
+        <div class="w-9 h-9 rounded-full bg-purple-100 text-purple-600 flex items-center
+                    justify-center text-sm font-semibold shrink-0 mr-3">RS</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-gray-800 truncate">Ravi Steel Suppliers</p>
+          <p class="text-xs text-gray-400">South India · Wholesale</p>
+        </div>
+      </div>
+
+      <div class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer">
+        <div class="w-9 h-9 rounded-full bg-green-100 text-green-600 flex items-center
+                    justify-center text-sm font-semibold shrink-0 mr-3">MT</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-gray-800 truncate">Mehta Traders</p>
+          <p class="text-xs text-gray-400">North India · Distributor</p>
+        </div>
+      </div>
+
+      <div class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer">
+        <div class="w-9 h-9 rounded-full bg-orange-100 text-orange-600 flex items-center
+                    justify-center text-sm font-semibold shrink-0 mr-3">SK</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-gray-800 truncate">Santosh Kumar &amp; Sons</p>
+          <p class="text-xs text-gray-400">East India · Retail</p>
+        </div>
+      </div>
+
+      <div class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer">
+        <div class="w-9 h-9 rounded-full bg-pink-100 text-pink-600 flex items-center
+                    justify-center text-sm font-semibold shrink-0 mr-3">DP</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-gray-800 truncate">Dinesh Plywood</p>
+          <p class="text-xs text-gray-400">West India · OEM</p>
+        </div>
+      </div>
+
+      <div class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer">
+        <div class="w-9 h-9 rounded-full bg-teal-100 text-teal-600 flex items-center
+                    justify-center text-sm font-semibold shrink-0 mr-3">VI</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-gray-800 truncate">Vishwakarma Infra</p>
+          <p class="text-xs text-gray-400">Central India · Wholesale</p>
+        </div>
+      </div>
+
+      <div class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer">
+        <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center
+                    justify-center text-sm font-semibold shrink-0 mr-3">KE</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-gray-800 truncate">Kapoor Electricals</p>
+          <p class="text-xs text-gray-400">Punjab · Retail</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Selection bar (shown when a customer is selected) -->
+    <div class="bg-blue-600 text-white px-4 py-3 flex items-center justify-between shadow-lg shrink-0">
+      <div class="min-w-0">
+        <p class="text-xs opacity-75">Selected</p>
+        <p class="text-sm font-semibold truncate">Abhishek Builders</p>
+      </div>
+      <button class="ml-4 bg-white text-blue-600 text-sm font-semibold px-4 py-1.5 rounded-lg shrink-0">
+        Continue →
+      </button>
+    </div>
+
+  </div>
+
+  <p class="label" style="margin-top:10px;">
+    ✅ Search · customer list · selection bar · avatar initials · "Continue →" CTA
+  </p>
+</div>
+</body>
+</html>
