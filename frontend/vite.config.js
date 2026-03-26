@@ -18,7 +18,7 @@ export default defineConfig({
 				description: "Create Sales Quotations for SNRG customers",
 				display: "standalone",
 				orientation: "portrait-primary",
-				start_url: "/sales-pwa",
+				start_url: "/app/sales-pwa",
 				scope: "/",
 				theme_color: "#2563eb",
 				background_color: "#ffffff",

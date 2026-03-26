@@ -5,6 +5,27 @@ frappe.pages["sales-pwa"].on_page_load = function (wrapper) {
 		single_column: true,
 	});
 
+	// Inject PWA manifest link into <head> so the browser can discover it
+	// (Frappe page HTML has no <link rel="manifest"> by default)
+	if (!document.querySelector('link[rel="manifest"]')) {
+		var manifestLink = document.createElement("link");
+		manifestLink.rel = "manifest";
+		manifestLink.href = "/assets/snrg_sales_pwa/js/manifest.webmanifest";
+		document.head.appendChild(manifestLink);
+	}
+
+	// Register service worker — served from site public root so scope covers /app/sales-pwa
+	if ("serviceWorker" in navigator) {
+		navigator.serviceWorker
+			.register("/sw.js")
+			.then(function (reg) {
+				console.log("[Sales PWA] SW registered, scope:", reg.scope);
+			})
+			.catch(function (err) {
+				console.warn("[Sales PWA] SW registration failed:", err);
+			});
+	}
+
 	// Remove default Frappe padding — Vue owns the full layout
 	var $section = $(wrapper).find(".layout-main-section");
 	$section.css({ padding: 0, overflow: "hidden" });
@@ -16,15 +37,6 @@ frappe.pages["sales-pwa"].on_page_load = function (wrapper) {
 	);
 
 	frappe.require("assets/snrg_sales_pwa/js/sales_pwa.js", function () {
-		// Register service worker for PWA offline support
-		if ("serviceWorker" in navigator) {
-			navigator.serviceWorker
-				.register("/assets/snrg_sales_pwa/sw.js")
-				.catch(function (err) {
-					console.warn("[Sales PWA] SW registration failed:", err);
-				});
-		}
-
 		if (typeof window.__mountSalesPWA === "function") {
 			window.__mountSalesPWA();
 		} else {
@@ -37,7 +49,6 @@ frappe.pages["sales-pwa"].on_page_load = function (wrapper) {
 };
 
 frappe.pages["sales-pwa"].on_page_show = function (wrapper) {
-	// Re-mount if the app was unmounted (e.g. page navigation away and back)
 	var el = document.getElementById("snrg-sales-pwa-app");
 	if (el && !el.__vue_app__ && typeof window.__mountSalesPWA === "function") {
 		window.__mountSalesPWA();
