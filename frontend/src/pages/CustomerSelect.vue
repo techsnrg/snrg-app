@@ -3,7 +3,14 @@
 
     <!-- Header -->
     <div class="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
-      <h1 class="text-base font-semibold text-gray-800 mb-3">Select Customer</h1>
+      <div class="flex items-center mb-3">
+        <button class="mr-3 text-gray-400 active:text-gray-600" @click="$router.back()">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <h1 class="text-base font-semibold text-gray-800">Customers</h1>
+      </div>
 
       <!-- Search input -->
       <div class="relative">
