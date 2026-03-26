@@ -1,3 +1,22 @@
+// Hide the entire Frappe desk chrome (navbar + page title bar + sidebar toggle)
+// so the PWA looks like a native app with no browser/desk UI
+function hideDeskChrome() {
+	$("header.navbar").hide();
+	$(".page-head").hide();
+	$(".layout-side-section").hide();
+	// Stretch the content area to fill the freed space
+	$(".layout-main").css({ "margin-top": 0, "padding-top": 0 });
+	$("body").addClass("snrg-pwa-mode");
+}
+
+function showDeskChrome() {
+	$("header.navbar").show();
+	$(".page-head").show();
+	$(".layout-side-section").show();
+	$(".layout-main").css({ "margin-top": "", "padding-top": "" });
+	$("body").removeClass("snrg-pwa-mode");
+}
+
 frappe.pages["sales-pwa"].on_page_load = function (wrapper) {
 	frappe.ui.make_app_page({
 		parent: wrapper,
@@ -6,7 +25,6 @@ frappe.pages["sales-pwa"].on_page_load = function (wrapper) {
 	});
 
 	// Inject PWA manifest link into <head> so the browser can discover it
-	// (Frappe page HTML has no <link rel="manifest"> by default)
 	if (!document.querySelector('link[rel="manifest"]')) {
 		var manifestLink = document.createElement("link");
 		manifestLink.rel = "manifest";
@@ -30,7 +48,7 @@ frappe.pages["sales-pwa"].on_page_load = function (wrapper) {
 	var $section = $(wrapper).find(".layout-main-section");
 	$section.css({ padding: 0, overflow: "hidden" });
 	$section.html(
-		'<div id="snrg-sales-pwa-app" style="height:100%;">' +
+		'<div id="snrg-sales-pwa-app" style="height:100%;overflow-y:auto;">' +
 			'<div style="display:flex;align-items:center;justify-content:center;' +
 			'height:200px;color:#6b7280;font-size:14px;">Loading…</div>' +
 		"</div>"
@@ -49,8 +67,15 @@ frappe.pages["sales-pwa"].on_page_load = function (wrapper) {
 };
 
 frappe.pages["sales-pwa"].on_page_show = function (wrapper) {
+	hideDeskChrome();
+
 	var el = document.getElementById("snrg-sales-pwa-app");
 	if (el && !el.__vue_app__ && typeof window.__mountSalesPWA === "function") {
 		window.__mountSalesPWA();
 	}
+};
+
+frappe.pages["sales-pwa"].on_page_hide = function (wrapper) {
+	// Restore the desk chrome when user navigates to any other Frappe page
+	showDeskChrome();
 };

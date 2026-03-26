@@ -1,1 +1,17 @@
 <div id="snrg-sales-pwa-app"></div>
+
+<style>
+/* When PWA mode is active, stretch the main container to full viewport height */
+body.snrg-pwa-mode .page-wrapper,
+body.snrg-pwa-mode .layout-main-section-wrapper,
+body.snrg-pwa-mode .layout-main-section,
+body.snrg-pwa-mode .layout-main,
+body.snrg-pwa-mode #snrg-sales-pwa-app {
+	height: 100vh !important;
+	max-height: 100vh;
+	overflow: hidden;
+}
+body.snrg-pwa-mode .container {
+	padding-top: 0 !important;
+}
+</style>
