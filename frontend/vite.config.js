@@ -52,18 +52,18 @@ export default defineConfig({
 	],
 
 	build: {
-		// JS chunks → public/js/
+		// Single IIFE bundle → no ES module import statements
+		// frappe.require() loads scripts as plain <script> tags (not type="module")
+		// so the bundle must be self-contained with no import/export syntax
 		outDir: "../snrg_sales_pwa/public/js",
 		emptyOutDir: false,
 		rollupOptions: {
 			input: "src/main.js",
 			output: {
+				format: "iife",
 				entryFileNames: "sales_pwa.js",
-				chunkFileNames: "sales_pwa-[name].js",
 				assetFileNames: "[name][extname]",
-				manualChunks: {
-					vendor: ["vue"],
-				},
+				// No manualChunks — everything inlined into one file
 			},
 		},
 	},
