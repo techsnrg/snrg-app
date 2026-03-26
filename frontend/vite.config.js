@@ -13,15 +13,15 @@ export default defineConfig({
 			// We register the SW manually in sales_pwa.js (Frappe page controller)
 			injectRegister: false,
 			manifest: {
-				name: "SNRG Sales",
-				short_name: "Sales",
-				description: "Create Sales Quotations for SNRG customers",
+				name: "Gold Coast SFA",
+				short_name: "GC SFA",
+				description: "Sales Force App for Gold Coast Electricals",
 				display: "standalone",
 				orientation: "portrait-primary",
 				start_url: "/app/sales-pwa",
 				scope: "/",
-				theme_color: "#2563eb",
-				background_color: "#ffffff",
+				theme_color: "#1e2d4f",
+				background_color: "#1e2d4f",
 				icons: [
 					{
 						src: "/assets/snrg_sales_pwa/icons/icon-192.png",
