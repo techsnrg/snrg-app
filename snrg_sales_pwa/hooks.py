@@ -7,7 +7,6 @@ app_license = "MIT"
 
 # No app_include_js — bundle is loaded on-demand by the page JS only
 
-# Fixtures — imported on every bench migrate, ensures the Page record always exists
-fixtures = [
-    {"dt": "Page", "filters": [["name", "=", "sales-pwa"]]}
-]
+# Ensure the Page record is created/exists on install and on every migrate
+after_install = "snrg_sales_pwa.install.after_install"
+after_migrate = ["snrg_sales_pwa.install.after_migrate"]
