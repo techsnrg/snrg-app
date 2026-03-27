@@ -63,14 +63,14 @@
                      padding:8px 0 6px;display:flex;flex-direction:column;
                      align-items:center;gap:3px;">
         <div style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;"
-             :style="isActive(tab.route) ? 'color:#1e2d4f' : 'color:#9ca3af'">
+             :style="isActive(tab) ? 'color:#1e2d4f' : 'color:#9ca3af'">
           <component :is="tab.icon" />
         </div>
         <span style="font-size:10px;font-weight:500;"
-              :style="isActive(tab.route) ? 'color:#1e2d4f' : 'color:#9ca3af'">
+              :style="isActive(tab) ? 'color:#1e2d4f' : 'color:#9ca3af'">
           {{ tab.label }}
         </span>
-        <span v-if="isActive(tab.route)"
+        <span v-if="isActive(tab)"
               style="width:16px;height:3px;background:#1e2d4f;border-radius:2px;margin-top:1px;"></span>
       </button>
     </nav>
@@ -244,16 +244,17 @@ const IconPeople = { render: () => h("svg", { width: 22, height: 22, fill: "none
 const IconBox  = { render: () => h("svg", { width: 22, height: 22, fill: "none", stroke: "currentColor", viewBox: "0 0 24 24" }, [h("path", { "stroke-linecap": "round", "stroke-linejoin": "round", "stroke-width": "2", d: "M20 7l-8-4-8 4m16 0v10l-8 4m0-14L4 17m8 4V11" })]) };
 
 const tabs = [
-  { label: "Home",      route: "/",           icon: IconHome },
-  { label: "New Quote", route: "/customers",  icon: IconPlus },
-  { label: "Quotations",route: "/quotations", icon: IconDoc  },
-  { label: "Customers", route: "/customers",  icon: IconPeople },
-  { label: "Items",     route: "/items",      icon: IconBox  },
+  { label: "Home",      route: "/",                   icon: IconHome,   prefix: null },
+  { label: "New Quote", route: "/new-quote/customer", icon: IconPlus,   prefix: "/new-quote" },
+  { label: "Quotations",route: "/quotations",          icon: IconDoc,    prefix: null },
+  { label: "Customers", route: "/customers",           icon: IconPeople, prefix: null },
+  { label: "Items",     route: "/items",               icon: IconBox,    prefix: null },
 ];
 
-function isActive(tabRoute) {
-  if (tabRoute === "/" ) return route.path === "/";
-  return route.path === tabRoute;
+function isActive(tab) {
+  if (tab.route === "/") return route.path === "/";
+  if (tab.prefix) return route.path.startsWith(tab.prefix);
+  return route.path === tab.route;
 }
 
 // ── Search ─────────────────────────────────────────────────────────────────

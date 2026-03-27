@@ -1,4 +1,5 @@
 import frappe
+from frappe.utils import flt
 
 
 @frappe.whitelist()
@@ -135,3 +136,105 @@ def mark_all_notifications_read():
 	)
 	frappe.db.commit()
 	return True
+
+
+@frappe.whitelist()
+def get_item_prices_batch(item_codes, customer=None):
+	"""Return price-list rates for a batch of item codes.
+
+	Uses the customer's default price list (if set), falling back to
+	the system-wide Selling Settings price list.
+	"""
+	import json
+
+	if isinstance(item_codes, str):
+		item_codes = json.loads(item_codes)
+
+	# Determine price list
+	price_list = (
+		frappe.db.get_single_value("Selling Settings", "selling_price_list")
+		or "Standard Selling"
+	)
+	if customer:
+		cust_pl = frappe.db.get_value("Customer", customer, "default_price_list")
+		if cust_pl:
+			price_list = cust_pl
+
+	result = {}
+	for item_code in item_codes:
+		row = frappe.db.get_value(
+			"Item Price",
+			{
+				"item_code": item_code,
+				"price_list": price_list,
+				"selling": 1,
+			},
+			["price_list_rate", "uom"],
+			as_dict=True,
+		) or {}
+		uom = row.get("uom") or frappe.db.get_value("Item", item_code, "stock_uom") or "Nos"
+		result[item_code] = {
+			"rate": flt(row.get("price_list_rate", 0)),
+			"uom": uom,
+		}
+
+	return result
+
+
+@frappe.whitelist(methods=["POST"])
+def create_quotation(customer, items, custom_offline_id=None):
+	"""Create a Sales Quotation in Draft status.
+
+	Returns the quotation name, or the existing name if the same
+	offline_id was already submitted (idempotency).
+	"""
+	import json
+
+	if isinstance(items, str):
+		items = json.loads(items)
+
+	# Idempotency: prevent duplicate offline submissions
+	if custom_offline_id:
+		existing = frappe.db.get_value(
+			"Quotation", {"custom_offline_id": custom_offline_id}, "name"
+		)
+		if existing:
+			return {"quotation": existing, "duplicate": True}
+
+	company = (
+		frappe.defaults.get_user_default("Company")
+		or frappe.db.get_single_value("Global Defaults", "default_company")
+	)
+	price_list = (
+		frappe.db.get_single_value("Selling Settings", "selling_price_list")
+		or "Standard Selling"
+	)
+	cust_pl = frappe.db.get_value("Customer", customer, "default_price_list")
+	if cust_pl:
+		price_list = cust_pl
+
+	doc = frappe.new_doc("Quotation")
+	doc.quotation_to       = "Customer"
+	doc.party_name         = customer
+	doc.company            = company
+	doc.transaction_date   = frappe.utils.nowdate()
+	doc.selling_price_list = price_list
+
+	# Store offline ID for idempotency (field may not exist on older installs)
+	if custom_offline_id:
+		try:
+			doc.custom_offline_id = custom_offline_id
+		except Exception:
+			pass
+
+	for item in items:
+		doc.append("items", {
+			"item_code": item.get("item_code"),
+			"qty":       flt(item.get("qty", 1)),
+			"rate":      flt(item.get("rate", 0)),
+		})
+
+	doc.flags.ignore_permissions = True
+	doc.insert()
+
+	return {"quotation": doc.name, "duplicate": False}
