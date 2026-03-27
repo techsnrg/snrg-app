@@ -1,25 +1,58 @@
 // ─── Route hijack ────────────────────────────────────────────────────────────
-// Frappe's router listens to `hashchange` events. Vue Router (hash mode) uses
-// hashes like  #/new-quote/customer  (leading slash).  Frappe routes use
-// #page-name  (no leading slash).  While the PWA overlay is visible we patch
-// frappe.route so it silently ignores any hash that starts with "#/" — those
-// belong to Vue and must not trigger Frappe's page loader.
-var _origFrappeRoute = null;
+// Vue Router (hash mode) uses hashes like  #/new-quote/customer  (leading /).
+// Frappe routes use  #page-name  (no leading slash after #).
+//
+// In Frappe v15 the hashchange event calls  frappe.router.route()  (not
+// frappe.route directly).  We patch BOTH just to be safe, and also intercept
+// the hashchange event at the capture phase before Frappe's bubble-phase
+// listener can act on Vue routes.
+var _origFrappeRoute       = null;
+var _origFrappeRouterRoute = null;
+var _hashCaptureListener   = null;
+
+function isVueHash() {
+	// Vue hash-history routes always start with #/
+	// Frappe routes look like  #sales-pwa  (no slash)
+	return (window.location.hash || "").startsWith("#/");
+}
 
 function installRouteHijack() {
-	if (_origFrappeRoute) return; // already installed
-	_origFrappeRoute = frappe.route.bind(frappe);
-	frappe.route = function () {
-		var hash = window.location.hash || "";
-		if (hash.startsWith("#/")) {
-			// Vue Router's route — do nothing and let Vue handle it.
-			return Promise.resolve();
-		}
-		return _origFrappeRoute.apply(frappe, arguments);
+	if (_hashCaptureListener) return; // already installed
+
+	// 1. Capture-phase hashchange listener — fires before Frappe's handler
+	_hashCaptureListener = function (e) {
+		if (isVueHash()) e.stopImmediatePropagation();
 	};
+	window.addEventListener("hashchange", _hashCaptureListener, true);
+
+	// 2. Patch frappe.router.route  (called by Frappe v15's hashchange handler)
+	if (frappe.router && typeof frappe.router.route === "function") {
+		_origFrappeRouterRoute = frappe.router.route.bind(frappe.router);
+		frappe.router.route = function () {
+			if (isVueHash()) return Promise.resolve();
+			return _origFrappeRouterRoute.apply(frappe.router, arguments);
+		};
+	}
+
+	// 3. Patch frappe.route  (belt-and-suspenders for older/different builds)
+	if (typeof frappe.route === "function") {
+		_origFrappeRoute = frappe.route.bind(frappe);
+		frappe.route = function () {
+			if (isVueHash()) return Promise.resolve();
+			return _origFrappeRoute.apply(frappe, arguments);
+		};
+	}
 }
 
 function uninstallRouteHijack() {
+	if (_hashCaptureListener) {
+		window.removeEventListener("hashchange", _hashCaptureListener, true);
+		_hashCaptureListener = null;
+	}
+	if (_origFrappeRouterRoute) {
+		frappe.router.route = _origFrappeRouterRoute;
+		_origFrappeRouterRoute = null;
+	}
 	if (_origFrappeRoute) {
 		frappe.route = _origFrappeRoute;
 		_origFrappeRoute = null;
