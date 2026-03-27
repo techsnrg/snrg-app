@@ -82,3 +82,56 @@ def get_quotations(search="", page=0, page_size=20):
 		limit_page_length=page_size,
 		ignore_permissions=False,
 	)
+
+
+@frappe.whitelist()
+def get_notification_count():
+	"""Return unread notification count for the current user."""
+	count = frappe.db.count(
+		"Notification Log",
+		{"for_user": frappe.session.user, "read": 0}
+	)
+	return {"count": count}
+
+
+@frappe.whitelist()
+def get_notifications(limit=15):
+	"""Return recent notifications for the current user."""
+	limit = int(limit)
+	user = frappe.session.user
+
+	notifications = frappe.get_list(
+		"Notification Log",
+		filters={"for_user": user},
+		fields=["name", "subject", "type", "document_type",
+				"document_name", "read", "creation"],
+		order_by="creation desc",
+		limit_page_length=limit,
+		ignore_permissions=True,
+	)
+
+	unread_count = frappe.db.count(
+		"Notification Log",
+		{"for_user": user, "read": 0}
+	)
+
+	return {"notifications": notifications, "unread_count": unread_count}
+
+
+@frappe.whitelist(methods=["POST"])
+def mark_notification_read(name):
+	"""Mark a single notification as read."""
+	frappe.db.set_value("Notification Log", name, "read", 1)
+	frappe.db.commit()
+	return True
+
+
+@frappe.whitelist(methods=["POST"])
+def mark_all_notifications_read():
+	"""Mark all notifications as read for the current user."""
+	frappe.db.sql(
+		"UPDATE `tabNotification Log` SET `read`=1 WHERE `for_user`=%s AND `read`=0",
+		frappe.session.user,
+	)
+	frappe.db.commit()
+	return True
