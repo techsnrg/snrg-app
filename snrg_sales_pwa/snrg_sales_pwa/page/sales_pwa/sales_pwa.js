@@ -1,12 +1,14 @@
-// Hide the entire Frappe desk chrome (navbar + page title bar + sidebar toggle)
-// so the PWA looks like a native app with no browser/desk UI
+// Hide the entire Frappe desk chrome so the PWA looks like a native app
 function hideDeskChrome() {
 	$("header.navbar").hide();
 	$(".page-head").hide();
 	$(".layout-side-section").hide();
-	// Stretch the content area to fill the freed space
 	$(".layout-main").css({ "margin-top": 0, "padding-top": 0 });
 	$("body").addClass("snrg-pwa-mode");
+
+	// Show the full-screen app overlay
+	var el = document.getElementById("snrg-sales-pwa-app");
+	if (el) el.style.display = "flex";
 }
 
 function showDeskChrome() {
@@ -15,6 +17,10 @@ function showDeskChrome() {
 	$(".layout-side-section").show();
 	$(".layout-main").css({ "margin-top": "", "padding-top": "" });
 	$("body").removeClass("snrg-pwa-mode");
+
+	// Hide the full-screen overlay so it doesn't sit on top of other Frappe pages
+	var el = document.getElementById("snrg-sales-pwa-app");
+	if (el) el.style.display = "none";
 }
 
 frappe.pages["sales-pwa"].on_page_load = function (wrapper) {
@@ -24,7 +30,7 @@ frappe.pages["sales-pwa"].on_page_load = function (wrapper) {
 		single_column: true,
 	});
 
-	// Inject PWA manifest link into <head> so the browser can discover it
+	// Inject PWA manifest link into <head>
 	if (!document.querySelector('link[rel="manifest"]')) {
 		var manifestLink = document.createElement("link");
 		manifestLink.rel = "manifest";
@@ -32,27 +38,36 @@ frappe.pages["sales-pwa"].on_page_load = function (wrapper) {
 		document.head.appendChild(manifestLink);
 	}
 
-	// Register service worker — served from site public root so scope covers /app/sales-pwa
+	// Register service worker at /sw.js so scope covers the full origin
 	if ("serviceWorker" in navigator) {
 		navigator.serviceWorker
 			.register("/sw.js")
 			.then(function (reg) {
-				console.log("[Sales PWA] SW registered, scope:", reg.scope);
+				console.log("[Sales PWA] SW registered:", reg.scope);
 			})
 			.catch(function (err) {
 				console.warn("[Sales PWA] SW registration failed:", err);
 			});
 	}
 
-	// Remove default Frappe padding — Vue owns the full layout
-	var $section = $(wrapper).find(".layout-main-section");
-	$section.css({ padding: 0, overflow: "hidden" });
-	$section.html(
-		'<div id="snrg-sales-pwa-app" style="height:100%;overflow-y:auto;">' +
-			'<div style="display:flex;align-items:center;justify-content:center;' +
-			'height:200px;color:#6b7280;font-size:14px;">Loading…</div>' +
-		"</div>"
-	);
+	// Create the app container as a fixed full-screen overlay.
+	// position:fixed + inset:0 fills the ENTIRE viewport regardless of
+	// Frappe's internal layout heights — this is the correct approach for a PWA.
+	var appEl = document.createElement("div");
+	appEl.id = "snrg-sales-pwa-app";
+	appEl.style.cssText = [
+		"position:fixed",
+		"inset:0",
+		"z-index:1000",
+		"display:flex",
+		"flex-direction:column",
+		"background:#f9fafb",
+		"overflow:hidden",
+	].join(";");
+	appEl.innerHTML =
+		'<div style="display:flex;align-items:center;justify-content:center;' +
+		'flex:1;color:#6b7280;font-size:14px;">Loading…</div>';
+	document.body.appendChild(appEl);
 
 	frappe.require("assets/snrg_sales_pwa/js/sales_pwa.js", function () {
 		if (typeof window.__mountSalesPWA === "function") {
@@ -76,6 +91,5 @@ frappe.pages["sales-pwa"].on_page_show = function (wrapper) {
 };
 
 frappe.pages["sales-pwa"].on_page_hide = function (wrapper) {
-	// Restore the desk chrome when user navigates to any other Frappe page
 	showDeskChrome();
 };

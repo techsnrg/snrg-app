@@ -1,5 +1,7 @@
 <template>
-  <div style="display:flex;flex-direction:column;height:100%;position:relative;background:#f9fafb;">
+  <!-- The parent #snrg-sales-pwa-app is already position:fixed;inset:0 (set by sales_pwa.js)
+       so this div just needs to fill it with the flex column layout -->
+  <div style="display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden;">
 
     <!-- ═══ FIXED HEADER ═══ -->
     <header style="background:#1e2d4f;flex-shrink:0;padding:12px 16px;display:flex;
