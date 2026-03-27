@@ -1,4 +1,32 @@
-// Hide the entire Frappe desk chrome so the PWA looks like a native app
+// ─── Route hijack ────────────────────────────────────────────────────────────
+// Frappe's router listens to `hashchange` events. Vue Router (hash mode) uses
+// hashes like  #/new-quote/customer  (leading slash).  Frappe routes use
+// #page-name  (no leading slash).  While the PWA overlay is visible we patch
+// frappe.route so it silently ignores any hash that starts with "#/" — those
+// belong to Vue and must not trigger Frappe's page loader.
+var _origFrappeRoute = null;
+
+function installRouteHijack() {
+	if (_origFrappeRoute) return; // already installed
+	_origFrappeRoute = frappe.route.bind(frappe);
+	frappe.route = function () {
+		var hash = window.location.hash || "";
+		if (hash.startsWith("#/")) {
+			// Vue Router's route — do nothing and let Vue handle it.
+			return Promise.resolve();
+		}
+		return _origFrappeRoute.apply(frappe, arguments);
+	};
+}
+
+function uninstallRouteHijack() {
+	if (_origFrappeRoute) {
+		frappe.route = _origFrappeRoute;
+		_origFrappeRoute = null;
+	}
+}
+
+// ─── Desk chrome ─────────────────────────────────────────────────────────────
 function hideDeskChrome() {
 	$("header.navbar").hide();
 	$(".page-head").hide();
@@ -6,7 +34,6 @@ function hideDeskChrome() {
 	$(".layout-main").css({ "margin-top": 0, "padding-top": 0 });
 	$("body").addClass("snrg-pwa-mode");
 
-	// Show the full-screen app overlay
 	var el = document.getElementById("snrg-sales-pwa-app");
 	if (el) el.style.display = "flex";
 }
@@ -18,11 +45,11 @@ function showDeskChrome() {
 	$(".layout-main").css({ "margin-top": "", "padding-top": "" });
 	$("body").removeClass("snrg-pwa-mode");
 
-	// Hide the full-screen overlay so it doesn't sit on top of other Frappe pages
 	var el = document.getElementById("snrg-sales-pwa-app");
 	if (el) el.style.display = "none";
 }
 
+// ─── Page lifecycle ───────────────────────────────────────────────────────────
 frappe.pages["sales-pwa"].on_page_load = function (wrapper) {
 	frappe.ui.make_app_page({
 		parent: wrapper,
@@ -50,9 +77,7 @@ frappe.pages["sales-pwa"].on_page_load = function (wrapper) {
 			});
 	}
 
-	// Create the app container as a fixed full-screen overlay.
-	// position:fixed + inset:0 fills the ENTIRE viewport regardless of
-	// Frappe's internal layout heights — this is the correct approach for a PWA.
+	// Create the full-screen overlay (position:fixed fills entire viewport)
 	var appEl = document.createElement("div");
 	appEl.id = "snrg-sales-pwa-app";
 	appEl.style.cssText = [
@@ -83,6 +108,7 @@ frappe.pages["sales-pwa"].on_page_load = function (wrapper) {
 
 frappe.pages["sales-pwa"].on_page_show = function (wrapper) {
 	hideDeskChrome();
+	installRouteHijack(); // stop Frappe reacting to Vue hash changes
 
 	var el = document.getElementById("snrg-sales-pwa-app");
 	if (el && !el.__vue_app__ && typeof window.__mountSalesPWA === "function") {
@@ -91,5 +117,6 @@ frappe.pages["sales-pwa"].on_page_show = function (wrapper) {
 };
 
 frappe.pages["sales-pwa"].on_page_hide = function (wrapper) {
+	uninstallRouteHijack(); // restore normal Frappe routing for other pages
 	showDeskChrome();
 };
